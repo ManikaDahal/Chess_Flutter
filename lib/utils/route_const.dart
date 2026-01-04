@@ -2,5 +2,9 @@ class Routes {
   static const loginRoute = "/login";
   static const signupRoute = "/signup";
   static const forgotPasswordRoute = "/forgotPassword";
+  static const enterOTPRoute = "/enterOtp";
+    static const resetPasswordRoute = "/resetPassword";
+
+
 
 }

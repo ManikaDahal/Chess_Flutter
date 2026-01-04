@@ -21,4 +21,8 @@ const String dontHAveanAccountStr="Don't have an account?";
 //Forgot Password Page
 const String sendCodeStr="Send Code";
 
+//OTP Page
+const String verifyAccountStr="Verify Account";
+const String verifyStr="Verify";
+
 

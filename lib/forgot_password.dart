@@ -54,7 +54,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
             ),
             SizedBox(height: 20,),
             CustomElevatedbutton(onPressed: (){
-              
+               RouteGenerator.navigateToPage(context, Routes.enterOTPRoute);
             }, child:Text(sendCodeStr,style: TextStyle(fontSize: 18)),),
           ],
         ),
