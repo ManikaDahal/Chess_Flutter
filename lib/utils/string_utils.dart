@@ -22,6 +22,9 @@ const String loginStr="Login";
 const String rememberMeStr="Remember me";
 const String forgotPasswordStr="Forgot Password";
 const String dontHAveanAccountStr="Don't have an account?";
+const String loginSuccessfullStr="Logged in successfully";
+const String loginFailedStr="Login Failed";
+const String sameStr="Email and Password must be same";
 
 //Forgot Password Page
 const String sendCodeStr="Send Code";

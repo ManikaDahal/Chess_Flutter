@@ -1,12 +1,16 @@
 import 'package:chess_game/utils/color_utils.dart';
+import 'package:chess_game/utils/display_snackBar.dart';
 import 'package:chess_game/utils/route_const.dart';
 import 'package:chess_game/utils/route_generator.dart';
+import 'package:chess_game/utils/spin_kit.dart';
 import 'package:chess_game/utils/string_utils.dart';
 import 'package:chess_game/widgets/customInkwell.dart';
 import 'package:chess_game/widgets/custom_elevatedButton.dart';
 import 'package:chess_game/widgets/custom_text.dart';
 import 'package:chess_game/widgets/custom_textFormField.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -16,18 +20,26 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailAddressController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool visible=false;
   bool _isPasswordVisible = false;
   bool rememberMe = false;
-  bool loader=false;
+  bool loader = false;
+  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
+      body: Stack(
+        children: [
+          ui(),
+          loader ? Loader.backdropFilter(context) : const SizedBox(),
+        ],
+      ),
+      );
+  }
+      Widget ui()=>SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: SingleChildScrollView(
@@ -41,7 +53,10 @@ class _LoginPageState extends State<LoginPage> {
                     backgroundColor: foregroundColor,
                     child: IconButton(
                       onPressed: () {
-                        RouteGenerator.navigateToPage(context, Routes.signupRoute);
+                        RouteGenerator.navigateToPage(
+                          context,
+                          Routes.signupRoute,
+                        );
                       },
                       icon: Icon(Icons.close),
                     ),
@@ -55,20 +70,20 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   SizedBox(height: 10),
-              
+
                   CustomTextformfield(
-                    controller: _nameController,
-                    hintText: nameStr,
+                    controller: _emailAddressController,
+                    hintText: emailAddressStr,
                     validator: (p0) {
                       if (p0 == null || p0.isEmpty) {
-                        return validateNameStr;
+                        return validateEmailAddressStr;
                       }
                       return null;
                     },
                   ),
                   SizedBox(height: 20),
                   CustomTextformfield(
-                    obscureText: visible?false:true,
+                    obscureText: _isPasswordVisible ? false : true,
                     controller: _passwordController,
                     hintText: passwordStr,
                     validator: (p0) {
@@ -84,13 +99,15 @@ class _LoginPageState extends State<LoginPage> {
                         });
                       },
                       icon: Icon(
-                        _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                        _isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                         color: _isPasswordVisible ? Colors.green : Colors.grey,
                       ),
                     ),
                   ),
                   SizedBox(height: 20),
-              
+
                   Row(
                     children: [
                       Checkbox(
@@ -105,7 +122,10 @@ class _LoginPageState extends State<LoginPage> {
                       Spacer(),
                       CustomInkwell(
                         onTap: () {
-                           RouteGenerator.navigateToPage(context, Routes.forgotPasswordRoute);
+                          RouteGenerator.navigateToPage(
+                            context,
+                            Routes.forgotPasswordRoute,
+                          );
                         },
                         child: Text(
                           forgotPasswordStr,
@@ -116,63 +136,112 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   CustomElevatedbutton(
                     onPressed: () {
-                      if (_formKey.currentState!.validate()){
+                      FocusScope.of(context).unfocus();
+                      if (_formKey.currentState!.validate()) {
                         setState(() {
-                          loader=true;
+                          loader = true;
                         });
-                        
+                        Future.delayed(Duration(seconds: 2), () async {
+                          FirebaseFirestore firestore =
+                              FirebaseFirestore.instance;
+                          await firestore
+                              .collection("Register")
+                              .where(
+                                "email",
+                                isEqualTo: _emailAddressController.text.trim(),
+                              )
+                              .where(
+                                "password",
+                                isEqualTo: _passwordController.text.trim(),
+                              )
+                              .get()
+                              .then((value) async {
+                                if (value.docs.isNotEmpty) {
+                                  if (rememberMe) {
+                                    final prefs =
+                                        await SharedPreferences.getInstance();
+                                    await prefs.setBool('isLoggedIn', true);
+                                  }
+                                  DisplaySnackbar.show(
+                                    context,
+                                    loginSuccessfullStr,
+                                  );
+                                  RouteGenerator.navigateToPageWithoutStack(
+                                    context,
+                                    Routes.gameBoardRoute,
+                                  );
+                                } else {
+                                  DisplaySnackbar.show(context, loginFailedStr);
+                                }
+                                setState(() => loader = false);
+                              })
+                              .catchError((error) {
+                                setState(() => loader = false);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(sameStr)),
+                                );
+                              });
+                        });
                       }
                     },
                     child: Text(loginStr),
                   ),
                   SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Expanded(child: Divider()),
-                        Text("Or"),
-                        Expanded(child: Divider()),
-                      ],
-                    ),
-                    SizedBox(height: 20),
-                    Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                               CustomElevatedbutton(
-                            onPressed: () {},
-                            width: MediaQuery.of(context).size.width * 0.25,
-                            backgroundColor: Colors.white,
-                            child: Image.asset("assets/images/google_logo.png"),
-                          ),
-                          SizedBox(width: 30,),
-                          CustomElevatedbutton(
-                            onPressed: () {},
-                            width: MediaQuery.of(context).size.width * 0.25,
-                            backgroundColor: Colors.white,
-                            child: Image.asset("assets/images/facebook_logo.png",
-                            height: 40,),
-                          ),
-                              ],
-                            ),
-                    SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Spacer(),
-                        CustomText(data: dontHAveanAccountStr,fontSize: 20,),
-                        CustomInkwell(
-                          child: CustomText(data: SignupStr, color: primaryColor,fontSize: 20,),
-                          onTap: () {
-                            RouteGenerator.navigateToPage(context, Routes.loginRoute);
-                          },
+                  Row(
+                    children: [
+                      Expanded(child: Divider()),
+                      Text("Or"),
+                      Expanded(child: Divider()),
+                    ],
+                  ),
+                  SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CustomElevatedbutton(
+                        onPressed: () {},
+                        width: MediaQuery.of(context).size.width * 0.25,
+                        backgroundColor: Colors.white,
+                        child: Image.asset("assets/images/google_logo.png"),
+                      ),
+                      SizedBox(width: 30),
+                      CustomElevatedbutton(
+                        onPressed: () {},
+                        width: MediaQuery.of(context).size.width * 0.25,
+                        backgroundColor: Colors.white,
+                        child: Image.asset(
+                          "assets/images/facebook_logo.png",
+                          height: 40,
                         ),
-                        Spacer(),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Spacer(),
+                      CustomText(data: dontHAveanAccountStr, fontSize: 20),
+                      CustomInkwell(
+                        child: CustomText(
+                          data: SignupStr,
+                          color: primaryColor,
+                          fontSize: 20,
+                        ),
+                        onTap: () {
+                          RouteGenerator.navigateToPage(
+                            context,
+                            Routes.loginRoute,
+                          );
+                        },
+                      ),
+                      Spacer(),
+                    ],
+                  ),
                 ],
               ),
             ),
           ),
         ),
-      ),
-    );
-  }
+      );
+    
 }
