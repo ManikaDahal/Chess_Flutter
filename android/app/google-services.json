@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "927880165414",
+    "project_id": "assignment-d3c9c",
+    "storage_bucket": "assignment-d3c9c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:927880165414:android:c372e051439b7fe80c8ee7",
+        "android_client_info": {
+          "package_name": "com.chessflutter.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGKhmYSgyg_QVCaEcUIl_QGf5lUt4qwd8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

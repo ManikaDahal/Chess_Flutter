@@ -1,9 +1,15 @@
+import 'package:chess_game/firebase_options.dart';
 import 'package:chess_game/login.dart';
 import 'package:chess_game/signup.dart';
 import 'package:chess_game/ui/chess_board.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+void main()async {
+  WidgetsFlutterBinding.ensureInitialized();
+await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 

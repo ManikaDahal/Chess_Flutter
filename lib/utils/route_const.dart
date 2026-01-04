@@ -4,6 +4,8 @@ class Routes {
   static const forgotPasswordRoute = "/forgotPassword";
   static const enterOTPRoute = "/enterOtp";
     static const resetPasswordRoute = "/resetPassword";
+    static const gameBoardRoute = "/gameBoard";
+
 
 
 

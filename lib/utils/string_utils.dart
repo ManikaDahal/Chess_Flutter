@@ -8,7 +8,12 @@ const String passwordStr="Password";
 const String validatePasswordStr="Please enter your password";
 const String SignupStr="Signup";
 const String alreadyHaveanAccountStr="Already have an account?";
-const String agreeTermsAndConditionStr="I agree wth Terms & Conditions";
+const String agreeTermsAndConditionStr="I agree with Terms & Conditions";
+const String notagreedToTermsAndConditionStr="Please agree with Terms & Conditions";
+const String signupSuccessfullStr="Signed Up Successfully";
+const String signupFailedStr="Signed Up Failed";
+
+
 
 
 //Login Page
@@ -30,5 +35,6 @@ const String newPasswordStr="New Password";
 const String confirmPasswordStr="Confirm Password";
 const String validateConfirmPasswordStr="Plase enter password again";
 const String resetStr="Reset Password";
+
 
 

@@ -3,6 +3,7 @@ import 'package:chess_game/login.dart';
 import 'package:chess_game/otp_page.dart';
 import 'package:chess_game/reset_password.dart';
 import 'package:chess_game/signup.dart';
+import 'package:chess_game/ui/chess_board.dart';
 import 'package:chess_game/utils/route_const.dart';
 import 'package:flutter/material.dart';
 
@@ -33,6 +34,8 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const OtpPage());
         case Routes.resetPasswordRoute:
         return MaterialPageRoute(builder: (_) => const ResetPassword());
+        case Routes.gameBoardRoute:
+        return MaterialPageRoute(builder: (_) => const GameBoard());
      
           
       default:
