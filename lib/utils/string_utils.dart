@@ -18,4 +18,7 @@ const String rememberMeStr="Remember me";
 const String forgotPasswordStr="Forgot Password";
 const String dontHAveanAccountStr="Don't have an account?";
 
+//Forgot Password Page
+const String sendCodeStr="Send Code";
+
 
