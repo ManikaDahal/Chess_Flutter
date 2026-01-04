@@ -25,4 +25,10 @@ const String sendCodeStr="Send Code";
 const String verifyAccountStr="Verify Account";
 const String verifyStr="Verify";
 
+//Reset Password Page
+const String newPasswordStr="New Password";
+const String confirmPasswordStr="Confirm Password";
+const String validateConfirmPasswordStr="Plase enter password again";
+const String resetStr="Reset Password";
+
 
