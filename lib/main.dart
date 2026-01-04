@@ -1,3 +1,5 @@
+import 'package:chess_game/login.dart';
+import 'package:chess_game/signup.dart';
 import 'package:chess_game/ui/chess_board.dart';
 import 'package:flutter/material.dart';
 
@@ -18,7 +20,7 @@ class MyApp extends StatelessWidget {
        
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const GameBoard(),
+      home: const LoginPage(),
     );
   }
 }
