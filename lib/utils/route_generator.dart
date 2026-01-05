@@ -1,6 +1,8 @@
+import 'package:chess_game/bottomnav_bar.dart';
 import 'package:chess_game/forgot_password.dart';
 import 'package:chess_game/login.dart';
 import 'package:chess_game/otp_page.dart';
+import 'package:chess_game/profile_page.dart';
 import 'package:chess_game/reset_password.dart';
 import 'package:chess_game/signup.dart';
 import 'package:chess_game/ui/chess_board.dart';
@@ -36,6 +38,10 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const ResetPassword());
         case Routes.gameBoardRoute:
         return MaterialPageRoute(builder: (_) => const GameBoard());
+         case Routes.bottomNavBarRoute:
+        return MaterialPageRoute(builder: (_) => const BottomnavBar());
+        case Routes.profileRoute:
+        return MaterialPageRoute(builder: (_) => const ProfilePage());
      
           
       default:

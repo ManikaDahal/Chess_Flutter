@@ -1,3 +1,4 @@
+import 'package:chess_game/authentication/auth_services.dart';
 import 'package:chess_game/utils/color_utils.dart';
 import 'package:chess_game/utils/display_snackBar.dart';
 import 'package:chess_game/utils/route_const.dart';
@@ -21,6 +22,7 @@ class Signup extends StatefulWidget {
 }
 
 class _SignupState extends State<Signup> {
+  final AuthServices authServices = AuthServices();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailAddressController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -150,36 +152,51 @@ class _SignupState extends State<Signup> {
                   setState(() {
                     loader = true;
                   });
-
                   try {
-                    var data = {
-                      "name": _nameController.text.trim(),
-                      "email": _emailAddressController.text.trim(),
-                      "password": _passwordController.text.trim(),
-                    };
-
-                    await FirebaseFirestore.instance
-                        .collection("Register")
-                        .add(data);
-
-                    setState(() {
-                      loader = false;
-                    });
-
-                    RouteGenerator.navigateToPage(
-                      context,
-                      Routes.gameBoardRoute,
+                    await authServices.signUp(
+                      name: _nameController.text.trim(),
+                      email: _emailAddressController.text.trim(),
+                      password: _passwordController.text.trim(),
                     );
-
+                    RouteGenerator.navigateToPage(context, Routes.bottomNavBarRoute);
                     DisplaySnackbar.show(context, signupSuccessfullStr);
                   } catch (e) {
-                     print(e);
-                    setState(() {
-                      loader = false;
-                    });
-
+                    DisplaySnackbar.show(context, e.toString());
                     DisplaySnackbar.show(context, signupFailedStr);
                   }
+                  setState(() {
+                    loader = false;
+                  });
+
+                  //   try {
+                  //     var data = {
+                  //       "name": _nameController.text.trim(),
+                  //       "email": _emailAddressController.text.trim(),
+                  //       "password": _passwordController.text.trim(),
+                  //     };
+
+                  //     await FirebaseFirestore.instance
+                  //         .collection("Register")
+                  //         .add(data);
+
+                  //     setState(() {
+                  //       loader = false;
+                  //     });
+
+                  //     RouteGenerator.navigateToPage(
+                  //       context,
+                  //       Routes.bottomNavBarRoute,
+                  //     );
+
+                  //     DisplaySnackbar.show(context, signupSuccessfullStr);
+                  //   } catch (e) {
+                  //      print(e);
+                  //     setState(() {
+                  //       loader = false;
+                  //     });
+
+                  //     DisplaySnackbar.show(context, signupFailedStr);
+                  //   }
                 },
 
                 child: Text(SignupStr),

@@ -28,6 +28,7 @@ const String sameStr="Email and Password must be same";
 
 //Forgot Password Page
 const String sendCodeStr="Send Code";
+const String emailSentStr="Password Reset Email sent";
 
 //OTP Page
 const String verifyAccountStr="Verify Account";
@@ -38,6 +39,17 @@ const String newPasswordStr="New Password";
 const String confirmPasswordStr="Confirm Password";
 const String validateConfirmPasswordStr="Plase enter password again";
 const String resetStr="Reset Password";
+
+//Logout
+const String logoutStr="LogOut";
+const String logoutSuccessfulStr="Logged out successfully";
+const String confirmLogoutStr="Confirm Logout";
+const String reConfirmLogoutStr="Are you sure you want to log out?";
+
+//Profile Page
+const String profilePageStr="Profile Page";
+
+
 
 
 

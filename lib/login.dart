@@ -1,3 +1,4 @@
+import 'package:chess_game/authentication/auth_services.dart';
 import 'package:chess_game/utils/color_utils.dart';
 import 'package:chess_game/utils/display_snackBar.dart';
 import 'package:chess_game/utils/route_const.dart';
@@ -20,13 +21,13 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final AuthServices authServices = AuthServices();
   final TextEditingController _emailAddressController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
   bool rememberMe = false;
   bool loader = false;
-  
 
   @override
   Widget build(BuildContext context) {
@@ -37,211 +38,219 @@ class _LoginPageState extends State<LoginPage> {
           loader ? Loader.backdropFilter(context) : const SizedBox(),
         ],
       ),
-      );
+    );
   }
-      Widget ui()=>SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: SingleChildScrollView(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+
+  Widget ui() => SafeArea(
+    child: Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 15),
+              CircleAvatar(
+                backgroundColor: foregroundColor,
+                child: IconButton(
+                  onPressed: () {
+                    RouteGenerator.navigateToPage(context, Routes.signupRoute);
+                  },
+                  icon: Icon(Icons.close),
+                ),
+              ),
+              SizedBox(height: 20),
+              Center(
+                child: CustomText(
+                  data: welcomeBackStr,
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 10),
+
+              CustomTextformfield(
+                controller: _emailAddressController,
+                hintText: emailAddressStr,
+                validator: (p0) {
+                  if (p0 == null || p0.isEmpty) {
+                    return validateEmailAddressStr;
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 20),
+              CustomTextformfield(
+                obscureText: _isPasswordVisible ? false : true,
+                controller: _passwordController,
+                hintText: passwordStr,
+                validator: (p0) {
+                  if (p0 == null || p0.isEmpty) {
+                    return validatePasswordStr;
+                  }
+                  return null;
+                },
+                suffixIcon: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _isPasswordVisible = !_isPasswordVisible;
+                    });
+                  },
+                  icon: Icon(
+                    _isPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                    color: _isPasswordVisible ? Colors.green : Colors.grey,
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+
+              Row(
                 children: [
-                  SizedBox(height: 15),
-                  CircleAvatar(
-                    backgroundColor: foregroundColor,
-                    child: IconButton(
-                      onPressed: () {
-                        RouteGenerator.navigateToPage(
-                          context,
-                          Routes.signupRoute,
-                        );
-                      },
-                      icon: Icon(Icons.close),
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  Center(
-                    child: CustomText(
-                      data: welcomeBackStr,
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 10),
-
-                  CustomTextformfield(
-                    controller: _emailAddressController,
-                    hintText: emailAddressStr,
-                    validator: (p0) {
-                      if (p0 == null || p0.isEmpty) {
-                        return validateEmailAddressStr;
-                      }
-                      return null;
+                  Checkbox(
+                    value: rememberMe,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        rememberMe = value! ? true : false;
+                      });
                     },
                   ),
-                  SizedBox(height: 20),
-                  CustomTextformfield(
-                    obscureText: _isPasswordVisible ? false : true,
-                    controller: _passwordController,
-                    hintText: passwordStr,
-                    validator: (p0) {
-                      if (p0 == null || p0.isEmpty) {
-                        return validatePasswordStr;
-                      }
-                      return null;
+                  CustomText(data: rememberMeStr),
+                  Spacer(),
+                  CustomInkwell(
+                    onTap: () {
+                      RouteGenerator.navigateToPage(
+                        context,
+                        Routes.forgotPasswordRoute,
+                      );
                     },
-                    suffixIcon: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          _isPasswordVisible = !_isPasswordVisible;
-                        });
-                      },
-                      icon: Icon(
-                        _isPasswordVisible
-                            ? Icons.visibility
-                            : Icons.visibility_off,
-                        color: _isPasswordVisible ? Colors.green : Colors.grey,
-                      ),
+                    child: Text(
+                      forgotPasswordStr,
+                      style: TextStyle(fontSize: 18),
                     ),
-                  ),
-                  SizedBox(height: 20),
-
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: rememberMe,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            rememberMe = value! ? true : false;
-                          });
-                        },
-                      ),
-                      CustomText(data: rememberMeStr),
-                      Spacer(),
-                      CustomInkwell(
-                        onTap: () {
-                          RouteGenerator.navigateToPage(
-                            context,
-                            Routes.forgotPasswordRoute,
-                          );
-                        },
-                        child: Text(
-                          forgotPasswordStr,
-                          style: TextStyle(fontSize: 18),
-                        ),
-                      ),
-                    ],
-                  ),
-                  CustomElevatedbutton(
-                    onPressed: () {
-                      FocusScope.of(context).unfocus();
-                      if (_formKey.currentState!.validate()) {
-                        setState(() {
-                          loader = true;
-                        });
-                        Future.delayed(Duration(seconds: 2), () async {
-                          FirebaseFirestore firestore =
-                              FirebaseFirestore.instance;
-                          await firestore
-                              .collection("Register")
-                              .where(
-                                "email",
-                                isEqualTo: _emailAddressController.text.trim(),
-                              )
-                              .where(
-                                "password",
-                                isEqualTo: _passwordController.text.trim(),
-                              )
-                              .get()
-                              .then((value) async {
-                                if (value.docs.isNotEmpty) {
-                                  if (rememberMe) {
-                                    final prefs =
-                                        await SharedPreferences.getInstance();
-                                    await prefs.setBool('isLoggedIn', true);
-                                  }
-                                  DisplaySnackbar.show(
-                                    context,
-                                    loginSuccessfullStr,
-                                  );
-                                  RouteGenerator.navigateToPageWithoutStack(
-                                    context,
-                                    Routes.gameBoardRoute,
-                                  );
-                                } else {
-                                  DisplaySnackbar.show(context, loginFailedStr);
-                                }
-                                setState(() => loader = false);
-                              })
-                              .catchError((error) {
-                                setState(() => loader = false);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(sameStr)),
-                                );
-                              });
-                        });
-                      }
-                    },
-                    child: Text(loginStr),
-                  ),
-                  SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(child: Divider()),
-                      Text("Or"),
-                      Expanded(child: Divider()),
-                    ],
-                  ),
-                  SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CustomElevatedbutton(
-                        onPressed: () {},
-                        width: MediaQuery.of(context).size.width * 0.25,
-                        backgroundColor: Colors.white,
-                        child: Image.asset("assets/images/google_logo.png"),
-                      ),
-                      SizedBox(width: 30),
-                      CustomElevatedbutton(
-                        onPressed: () {},
-                        width: MediaQuery.of(context).size.width * 0.25,
-                        backgroundColor: Colors.white,
-                        child: Image.asset(
-                          "assets/images/facebook_logo.png",
-                          height: 40,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Spacer(),
-                      CustomText(data: dontHAveanAccountStr, fontSize: 20),
-                      CustomInkwell(
-                        child: CustomText(
-                          data: SignupStr,
-                          color: primaryColor,
-                          fontSize: 20,
-                        ),
-                        onTap: () {
-                          RouteGenerator.navigateToPage(
-                            context,
-                            Routes.loginRoute,
-                          );
-                        },
-                      ),
-                      Spacer(),
-                    ],
                   ),
                 ],
               ),
-            ),
+              CustomElevatedbutton(
+                onPressed: () async {
+                  FocusScope.of(context).unfocus();
+                  if (_formKey.currentState!.validate()) {
+                    setState(() {
+                      loader = true;
+                    });
+                    try {
+                      await authServices.login(
+                        email: _emailAddressController.text.trim(),
+                        password: _passwordController.text.trim(),
+                      );
+                      RouteGenerator.navigateToPage(context, Routes.bottomNavBarRoute);
+                      DisplaySnackbar.show(context, loginSuccessfullStr);
+                    } catch (e) {
+                      DisplaySnackbar.show(context, e.toString());
+                      DisplaySnackbar.show(context, loginFailedStr);
+                    }
+                    setState(() {
+                      loader=false;
+                    });
+                    // Future.delayed(Duration(seconds: 2), () async {
+                    //   FirebaseFirestore firestore =
+                    //       FirebaseFirestore.instance;
+                    //   await firestore
+                    //       .collection("Register")
+                    //       .where(
+                    //         "email",
+                    //         isEqualTo: _emailAddressController.text.trim(),
+                    //       )
+                    //       .where(
+                    //         "password",
+                    //         isEqualTo: _passwordController.text.trim(),
+                    //       )
+                    //       .get()
+                    //       .then((value) async {
+                    //         if (value.docs.isNotEmpty) {
+                    //           if (rememberMe) {
+                    //             final prefs =
+                    //                 await SharedPreferences.getInstance();
+                    //             await prefs.setBool('isLoggedIn', true);
+                    //           }
+                    //           DisplaySnackbar.show(
+                    //             context,
+                    //             loginSuccessfullStr,
+                    //           );
+                    //           RouteGenerator.navigateToPageWithoutStack(
+                    //             context,
+                    //             Routes.bottomNavBarRoute,
+                    //           );
+                    //         } else {
+                    //           DisplaySnackbar.show(context, loginFailedStr);
+                    //         }
+                    //         setState(() => loader = false);
+                    //       })
+                    //       .catchError((error) {
+                    //         setState(() => loader = false);
+                    //         ScaffoldMessenger.of(context).showSnackBar(
+                    //           SnackBar(content: Text(sameStr)),
+                    //         );
+                    //       });
+                    // });
+                  }
+                },
+                child: Text(loginStr),
+              ),
+              SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(child: Divider()),
+                  Text("Or"),
+                  Expanded(child: Divider()),
+                ],
+              ),
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CustomElevatedbutton(
+                    onPressed: () {},
+                    width: MediaQuery.of(context).size.width * 0.25,
+                    backgroundColor: Colors.white,
+                    child: Image.asset("assets/images/google_logo.png"),
+                  ),
+                  SizedBox(width: 30),
+                  CustomElevatedbutton(
+                    onPressed: () {},
+                    width: MediaQuery.of(context).size.width * 0.25,
+                    backgroundColor: Colors.white,
+                    child: Image.asset(
+                      "assets/images/facebook_logo.png",
+                      height: 40,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 20),
+              Row(
+                children: [
+                  Spacer(),
+                  CustomText(data: dontHAveanAccountStr, fontSize: 20),
+                  CustomInkwell(
+                    child: CustomText(
+                      data: SignupStr,
+                      color: primaryColor,
+                      fontSize: 20,
+                    ),
+                    onTap: () {
+                      RouteGenerator.navigateToPage(context, Routes.loginRoute);
+                    },
+                  ),
+                  Spacer(),
+                ],
+              ),
+            ],
           ),
         ),
-      );
-    
+      ),
+    ),
+  );
 }

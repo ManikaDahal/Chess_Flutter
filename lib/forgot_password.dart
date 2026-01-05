@@ -1,10 +1,12 @@
 import 'package:chess_game/utils/color_utils.dart';
+import 'package:chess_game/utils/display_snackBar.dart';
 import 'package:chess_game/utils/route_const.dart';
 import 'package:chess_game/utils/route_generator.dart';
 import 'package:chess_game/utils/string_utils.dart';
 import 'package:chess_game/widgets/custom_elevatedButton.dart';
 import 'package:chess_game/widgets/custom_text.dart';
 import 'package:chess_game/widgets/custom_textFormField.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class ForgotPassword extends StatefulWidget {
@@ -15,6 +17,25 @@ class ForgotPassword extends StatefulWidget {
 }
 
 class _ForgotPasswordState extends State<ForgotPassword> {
+  final TextEditingController _emailAddressController = TextEditingController();
+  @override
+  void dispose() {
+    _emailAddressController.dispose();
+    super.dispose();
+  }
+
+  Future passwordReset() async {
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(
+        email: _emailAddressController.text.trim(),
+      );
+      DisplaySnackbar.show(context, emailSentStr);
+    } catch (e) {
+      print(e);
+      DisplaySnackbar.show(context, "Error: ${e.toString()}");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,9 +62,10 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-        
+
             SizedBox(height: 20),
             CustomTextformfield(
+              controller: _emailAddressController,
               hintText: emailAddressStr,
               validator: (p0) {
                 if (p0 == null || p0.isEmpty) {
@@ -52,10 +74,13 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                 return null;
               },
             ),
-            SizedBox(height: 20,),
-            CustomElevatedbutton(onPressed: (){
-               RouteGenerator.navigateToPage(context, Routes.enterOTPRoute);
-            }, child:Text(sendCodeStr,style: TextStyle(fontSize: 18)),),
+            SizedBox(height: 20),
+            CustomElevatedbutton(
+              onPressed: () async {
+                await passwordReset();
+              },
+              child: Text(sendCodeStr, style: TextStyle(fontSize: 18)),
+            ),
           ],
         ),
       ),

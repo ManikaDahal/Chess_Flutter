@@ -1,7 +1,9 @@
+import 'package:chess_game/bottomnav_bar.dart';
 import 'package:chess_game/firebase_options.dart';
 import 'package:chess_game/login.dart';
 import 'package:chess_game/signup.dart';
 import 'package:chess_game/ui/chess_board.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
@@ -26,7 +28,22 @@ class MyApp extends StatelessWidget {
        
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const LoginPage(),
+      home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context,snapshot){
+          if(snapshot.connectionState==ConnectionState.waiting){
+            return Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          if(snapshot.hasData){
+            return BottomnavBar();
+          }
+          else{
+            return LoginPage();
+          }
+
+      },),
     );
   }
 }
