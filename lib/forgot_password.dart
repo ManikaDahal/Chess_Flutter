@@ -69,6 +69,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                 SizedBox(width: 20),
                 ChoiceChip(
                   label: Text(phoneStr),
+                  
                   selected: !useEmail,
                   onSelected: (selected) {
                     setState(() {
