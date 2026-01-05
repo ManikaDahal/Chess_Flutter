@@ -1,5 +1,9 @@
+import 'dart:core';
+
+import 'package:chess_game/authentication/auth_services.dart';
 import 'package:chess_game/utils/color_utils.dart';
 import 'package:chess_game/utils/display_snackBar.dart';
+import 'package:chess_game/authentication/otp_arguments.dart';
 import 'package:chess_game/utils/route_const.dart';
 import 'package:chess_game/utils/route_generator.dart';
 import 'package:chess_game/utils/string_utils.dart';
@@ -17,24 +21,11 @@ class ForgotPassword extends StatefulWidget {
 }
 
 class _ForgotPasswordState extends State<ForgotPassword> {
+  final AuthServices authService = AuthServices();
+  final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _emailAddressController = TextEditingController();
-  @override
-  void dispose() {
-    _emailAddressController.dispose();
-    super.dispose();
-  }
-
-  Future passwordReset() async {
-    try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(
-        email: _emailAddressController.text.trim(),
-      );
-      DisplaySnackbar.show(context, emailSentStr);
-    } catch (e) {
-      print(e);
-      DisplaySnackbar.show(context, "Error: ${e.toString()}");
-    }
-  }
+  bool useEmail = true;
+  bool isSendingOtp = false;
 
   @override
   Widget build(BuildContext context) {
@@ -64,22 +55,124 @@ class _ForgotPasswordState extends State<ForgotPassword> {
             ),
 
             SizedBox(height: 20),
-            CustomTextformfield(
-              controller: _emailAddressController,
-              hintText: emailAddressStr,
-              validator: (p0) {
-                if (p0 == null || p0.isEmpty) {
-                  return validateEmailAddressStr;
-                }
-                return null;
-              },
+            Row(
+              children: [
+                ChoiceChip(
+                  label: Text(emailAddressStr),
+                  selected: useEmail,
+                  onSelected: (selected) {
+                    setState(() {
+                      useEmail = true;
+                    });
+                  },
+                ),
+                SizedBox(width: 20),
+                ChoiceChip(
+                  label: Text(phoneStr),
+                  selected: !useEmail,
+                  onSelected: (selected) {
+                    setState(() {
+                      useEmail = false;
+                    });
+                  },
+                ),
+              ],
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 30),
+
+            useEmail
+                ? CustomTextformfield(
+                    controller: _emailAddressController,
+                    hintText: emailAddressStr,
+                    validator: (p0) {
+                      if (p0 == null || p0.isEmpty) {
+                        return validateEmailAddressStr;
+                      }
+                      return null;
+                    },
+                  )
+                : CustomTextformfield(
+                    controller: _phoneController,
+                    hintText: phoneStr,
+                    validator: (p0) {
+                      if (p0 == null || p0.isEmpty) {
+                        return validatePhoneStr;
+                      }
+                      return null;
+                    },
+                  ),
+            SizedBox(height: 50),
             CustomElevatedbutton(
-              onPressed: () async {
-                await passwordReset();
-              },
-              child: Text(sendCodeStr, style: TextStyle(fontSize: 18)),
+              onPressed: isSendingOtp
+                  ? null
+                  : () async {
+                      setState(() {
+                        isSendingOtp = true;
+                      });
+                      if (useEmail) {
+                        String email = _emailAddressController.text.trim();
+                        if (email.isEmpty) {
+                          DisplaySnackbar.show(
+                            context,
+                            validateEmailAddressStr,
+                          );
+                          setState(() {
+                            isSendingOtp = false;
+                          });
+                          return;
+                        }
+
+                        String otp = authService.generateOtp();
+                        await authService.saveOtp(email, otp);
+                        DisplaySnackbar.show(context, otpSendStr);
+                        RouteGenerator.navigateToPage(
+                          context,
+                          Routes.enterOTPRoute,
+                          arguments: OtpArguments(
+                            isEmail: true,
+                            contact: email,
+                            verificationId: '',
+                          ),
+                        );
+                      } else {
+                        String phone = _phoneController.text.trim();
+                        if (phone.isEmpty) {
+                          DisplaySnackbar.show(context, validatePhoneStr);
+                          setState(() {
+                            isSendingOtp = false;
+                          });
+                          return;
+                        }
+
+                        await authService.sendPhoneOtp(
+                          phone,
+                          codeSent: (verId) {
+                            RouteGenerator.navigateToPage(
+                              context,
+                              Routes.enterOTPRoute,
+                              arguments: OtpArguments(
+                                isEmail: false,
+                                contact: phone,
+                                verificationId: verId,
+                              ),
+                            );
+                          },
+                          verificationFailed: (error) {
+                            DisplaySnackbar.show(
+                              context,
+                              error.message ?? "Phone Error",
+                            );
+                          },
+                        );
+                      }
+                      setState(() {
+                        isSendingOtp = false;
+                      });
+                    },
+
+              child: isSendingOtp
+                  ? CircularProgressIndicator()
+                  : Text(sendCodeStr, style: TextStyle(fontSize: 18)),
             ),
           ],
         ),

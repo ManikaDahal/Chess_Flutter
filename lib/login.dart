@@ -1,4 +1,5 @@
 import 'package:chess_game/authentication/auth_services.dart';
+import 'package:chess_game/authentication/secure_storage.dart';
 import 'package:chess_game/utils/color_utils.dart';
 import 'package:chess_game/utils/display_snackBar.dart';
 import 'package:chess_game/utils/route_const.dart';
@@ -10,7 +11,9 @@ import 'package:chess_game/widgets/custom_elevatedButton.dart';
 import 'package:chess_game/widgets/custom_text.dart';
 import 'package:chess_game/widgets/custom_textFormField.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
@@ -21,6 +24,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final LocalAuthentication auth = LocalAuthentication();
   final AuthServices authServices = AuthServices();
   final TextEditingController _emailAddressController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -28,6 +32,26 @@ class _LoginPageState extends State<LoginPage> {
   bool _isPasswordVisible = false;
   bool rememberMe = false;
   bool loader = false;
+
+  checkAuth() async {
+    bool isAvailable;
+    isAvailable = await auth.canCheckBiometrics;
+    print(isAvailable);
+    if (isAvailable) {
+      bool result = await auth.authenticate(
+        biometricOnly: true,
+
+        localizedReason: "Scan you fingerprint to Proceed",
+      );
+      if (result) {
+        RouteGenerator.navigateToPage(context, Routes.bottomNavBarRoute);
+      } else {
+        DisplaySnackbar.show(context, deniedPermissionStr);
+      }
+    } else {
+      print(noBiometricsDetectedStr);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +130,17 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               SizedBox(height: 20),
+              Center(
+                child: CustomInkwell(
+                  onTap: () {
+                    checkAuth();
+                  },
+                  child: CustomText(data: fingerprintLoginStr),
+                ),
+              ),
+              SizedBox(height: 10),
 
+              // Center(child: const FingerprintLoginButton()),
               Row(
                 children: [
                   Checkbox(
@@ -141,18 +175,26 @@ class _LoginPageState extends State<LoginPage> {
                       loader = true;
                     });
                     try {
-                      await authServices.login(
+                      UserCredential userCredential = await authServices.login(
                         email: _emailAddressController.text.trim(),
                         password: _passwordController.text.trim(),
                       );
-                      RouteGenerator.navigateToPage(context, Routes.bottomNavBarRoute);
+                      final storage = SecureStorage();
+                      if (userCredential.user != null) {
+                        await storage.saveUser(userCredential.user!.uid);
+                      }
+
+                      RouteGenerator.navigateToPage(
+                        context,
+                        Routes.bottomNavBarRoute,
+                      );
                       DisplaySnackbar.show(context, loginSuccessfullStr);
                     } catch (e) {
                       DisplaySnackbar.show(context, e.toString());
                       DisplaySnackbar.show(context, loginFailedStr);
                     }
                     setState(() {
-                      loader=false;
+                      loader = false;
                     });
                     // Future.delayed(Duration(seconds: 2), () async {
                     //   FirebaseFirestore firestore =
@@ -241,7 +283,10 @@ class _LoginPageState extends State<LoginPage> {
                       fontSize: 20,
                     ),
                     onTap: () {
-                      RouteGenerator.navigateToPage(context, Routes.loginRoute);
+                      RouteGenerator.navigateToPage(
+                        context,
+                        Routes.signupRoute,
+                      );
                     },
                   ),
                   Spacer(),

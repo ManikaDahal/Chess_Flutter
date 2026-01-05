@@ -1,4 +1,5 @@
 import 'package:chess_game/authentication/auth_services.dart';
+import 'package:chess_game/authentication/secure_storage.dart';
 import 'package:chess_game/utils/color_utils.dart';
 import 'package:chess_game/utils/display_snackBar.dart';
 import 'package:chess_game/utils/route_const.dart';
@@ -47,14 +48,16 @@ class _ProfilePageState extends State<ProfilePage> {
                   actions: [
                     TextButton(onPressed: (){
                       Navigator.pop(context,false);
-                    }, child: Text("No")),
+                    }, child: Text(noStr)),
                     TextButton(onPressed: (){
                         Navigator.pop(context,true);
-                    }, child: Text("Yes")),
+                    }, child: Text(yesStr)),
                   ],
                   ), context: context);
                  if(confirmLogout==true){
                   await authServices.logout();
+                  await SecureStorage().clear();
+
                 RouteGenerator.navigateToPage(context, Routes.loginRoute);
                 DisplaySnackbar.show(context, logoutSuccessfulStr);
                  }

@@ -1,94 +1,111 @@
-import 'package:chess_game/utils/color_utils.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:chess_game/utils/display_snackBar.dart';
 import 'package:chess_game/utils/route_const.dart';
 import 'package:chess_game/utils/route_generator.dart';
-import 'package:chess_game/utils/string_utils.dart';
 import 'package:chess_game/widgets/custom_elevatedButton.dart';
 import 'package:chess_game/widgets/custom_text.dart';
 import 'package:chess_game/widgets/custom_textFormField.dart';
-import 'package:flutter/material.dart';
+import 'package:chess_game/utils/string_utils.dart';
 
 class ResetPassword extends StatefulWidget {
-  const ResetPassword({super.key});
+  final bool isEmail;
+  final String contact; // email or phone
+
+  const ResetPassword({
+    super.key,
+    required this.isEmail,
+    required this.contact,
+  });
 
   @override
   State<ResetPassword> createState() => _ResetPasswordState();
 }
 
 class _ResetPasswordState extends State<ResetPassword> {
-    final TextEditingController _passwordController = TextEditingController();
-        final TextEditingController _confirmPasswordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-    bool _isPasswordVisible=false;
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text("Reset Password")),
       body: Padding(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 30,),
-            CircleAvatar(
-              backgroundColor: foregroundColor,
-              child: IconButton(onPressed: (){
-                RouteGenerator.navigateToPage(context, Routes.enterOTPRoute);
-              }, icon:Icon(Icons.arrow_back)),
+            CustomText(
+              data: widget.isEmail
+                  ? "Reset password for ${widget.contact}"
+                  : "Phone verified successfully",
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
             ),
-            SizedBox(height: 15,),
-            Center(child: CustomText(data:newPasswordStr,fontSize: 25,fontWeight: FontWeight.bold, )),
-            SizedBox(
-              height: 20,
-            ),
-           CustomTextformfield(
-              controller: _passwordController,
-              hintText: passwordStr,
-              suffixIcon: IconButton(
-                onPressed: () {
-                  setState(() {
-                    _isPasswordVisible=!_isPasswordVisible;
-                  });
-                },
-                icon: Icon(
-                  _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                  color: _isPasswordVisible ? Colors.green : Colors.grey,
-                ),
+
+            const SizedBox(height: 30),
+
+            // 🔹 EMAIL FLOW
+            if (widget.isEmail)
+              CustomElevatedbutton(
+                onPressed: isLoading
+                    ? null
+                    : () async {
+                        setState(() => isLoading = true);
+
+                        try {
+                          await _auth.sendPasswordResetEmail(
+                            email: widget.contact,
+                          );
+
+                          if (!mounted) return;
+
+                          DisplaySnackbar.show(
+                            context,
+                            "Password reset link sent to email",
+                          );
+
+                          RouteGenerator.navigateToPageWithoutStack(
+                            context,
+                            Routes.loginRoute,
+                          );
+                        } on FirebaseAuthException catch (e) {
+                          DisplaySnackbar.show(
+                            context,
+                            e.message ?? "Something went wrong",
+                          );
+                        }
+
+                        setState(() => isLoading = false);
+                      },
+                child: isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : Text(newPasswordStr),
               ),
-              validator: (p0) {
-                if (p0 == null || p0.isEmpty) {
-                  return validatePasswordStr;
-                }
-                return null;
-              },
-            ),
-            SizedBox(height: 15),
 
-            CustomTextformfield(
-              controller: _confirmPasswordController,
-              hintText: confirmPasswordStr,
-              suffixIcon: IconButton(
-                onPressed: () {
-                  setState(() {
-                    _isPasswordVisible=!_isPasswordVisible;
-                  });
-                },
-                icon: Icon(
-                  _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                  color: _isPasswordVisible ? Colors.green : Colors.grey,
-                ),
+            // 🔹 PHONE FLOW
+            if (!widget.isEmail)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CustomText(
+                    data:
+                        "Your phone number is verified.\nPlease login again.",
+                    fontSize: 16,
+                  ),
+                  const SizedBox(height: 20),
+                  CustomElevatedbutton(
+                    onPressed: () {
+                      RouteGenerator.navigateToPageWithoutStack(
+                        context,
+                        Routes.loginRoute,
+                      );
+                    },
+                    child: const Text("Go to Login"),
+                  ),
+                ],
               ),
-              validator: (p0) {
-                if (p0 == null || p0.isEmpty) {
-                  return validateConfirmPasswordStr;
-                }
-                return null;
-              },
-            ),
-            SizedBox(height: 20,),
-
-            CustomElevatedbutton(onPressed: (){}, child: Text(resetStr,style: TextStyle(fontSize: 18)),),
-
-
           ],
         ),
       ),

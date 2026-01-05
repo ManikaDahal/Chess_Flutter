@@ -25,10 +25,15 @@ const String dontHAveanAccountStr="Don't have an account?";
 const String loginSuccessfullStr="Logged in successfully";
 const String loginFailedStr="Login Failed";
 const String sameStr="Email and Password must be same";
+const String fingerprintLoginStr="Login using Fingerprint";
 
 //Forgot Password Page
 const String sendCodeStr="Send Code";
 const String emailSentStr="Password Reset Email sent";
+const String phoneStr="Phone Number";
+const String validatePhoneStr="Please enter your phone number";
+const String otpSendStr="OTP sent.";
+
 
 //OTP Page
 const String verifyAccountStr="Verify Account";
@@ -45,6 +50,8 @@ const String logoutStr="LogOut";
 const String logoutSuccessfulStr="Logged out successfully";
 const String confirmLogoutStr="Confirm Logout";
 const String reConfirmLogoutStr="Are you sure you want to log out?";
+const String yesStr="Yes";
+const String noStr="No";
 
 //Profile Page
 const String profilePageStr="Profile Page";
@@ -52,4 +59,5 @@ const String profilePageStr="Profile Page";
 
 
 
-
+const String deniedPermissionStr="Permssion Denied";
+const String noBiometricsDetectedStr="No biometric sensor detected";
